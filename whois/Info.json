@@ -1,7 +1,8 @@
- {
+
+{
     "AUTHOR" : "LegitBananaMan",
     "SHORT" : "Calls information on a user",
-    "DESCRIPTION" : "Call a user's information,
+    "DESCRIPTION" : "Call a user's information",
     "DISABLED" : false,
     "NAME" : "whois",
     "TAGS" : ["user", "random"],

@@ -1,9 +1,9 @@
  {
     "AUTHOR" : "LegitBananaMan",
-    "SHORT" : "Tell you if someone's a thot",
-    "DESCRIPTION" : "Determine wheather or not somebody's a thot",
+    "SHORT" : "Calls information on a user",
+    "DESCRIPTION" : "Call a user's information,
     "DISABLED" : false,
-    "NAME" : "Thot",
-    "TAGS" : ["thot", "random"],
-    "INSTALL_MSG" : "Usage: `[p]thot <user>`"
+    "NAME" : "whois",
+    "TAGS" : ["user", "random"],
+    "INSTALL_MSG" : "Usage: `[p]whois <user>`"
 }

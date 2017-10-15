@@ -6,5 +6,5 @@
     "DISABLED" : false,
     "NAME" : "whois",
     "TAGS" : ["user", "random"],
-    "INSTALL_MSG" : "Usage: `[p]whois <user>`"
+    "INSTALL_MSG" : "Usage: `[p]whois <user>` ABSOLUTLEY WILL NOT WORK if you don't have economy loaded"
 }

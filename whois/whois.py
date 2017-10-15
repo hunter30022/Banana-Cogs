@@ -50,7 +50,7 @@ class Economy:
             return True
 
 
-class Whois2:
+class Whois:
 
     """Some random utilities that I threw together for school"""
     def __init__(self, bot):
@@ -64,7 +64,7 @@ class Whois2:
              return user.joined_at
 
     @commands.command(pass_context=True, no_pm=True)
-    async def whois2(self, ctx, *, user: discord.Member=None):
+    async def whois(self, ctx, *, user: discord.Member=None):
         """Gives you some info on a user"""
         author = ctx.message.author
         server = ctx.message.server
@@ -146,4 +146,4 @@ class Whois2:
 
 
 def setup(bot):
-    bot.add_cog(Whois2(bot))
+    bot.add_cog(Whois(bot))

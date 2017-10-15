@@ -114,7 +114,7 @@ class Whois:
             highestrole = "User does not have any roles"
         else:
             highestrole = user.top_role
-        if user.game is None:
+        if user.nick is None:
             displayname = "User currently has no nickname"
         else:
             displayname = user.nick
@@ -133,7 +133,7 @@ class Whois:
         embed.add_field(name="Status", value=userstatus, inline=False)
         embed.add_field(name="User is a bot", value=userisbot, inline=False)
         embed.add_field(name="Playing", value=playinggame, inline=False)
-        embed.add_field(name="Econonomy status.", value=economystatus, inline=False)
+        embed.add_field(name="Economy status.", value=economystatus, inline=False)
         embed.add_field(name="Joined Discord on", value=created_on, inline=False)
         embed.add_field(name="Joined this server on", value=joined_on, inline=True)
         embed.set_footer(text="Member #{} | User ID:{}"

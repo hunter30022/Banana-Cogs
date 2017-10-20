@@ -435,14 +435,13 @@ class uWarn:
 
 
     @case.command(pass_context=True)
-    async def check(self, ctx, case: int):
+    async def check(self, ctx, case: int, user: discord.Member):
         """Give the sanction and the reason of a specific case
             
             If 0 is given, all of the cases of the user will be given"""
         
         server = ctx.message.server
         author = ctx.message.author
-        user = discord.Member
         
         if not os.path.isfile('data/uwarn/history/{}.json'.format(server.id)):
             print("Creating empty {}".format(server.id))
@@ -458,11 +457,8 @@ class uWarn:
             await self.erro(ctx)
             return
         
-        if user is None:
-            user = ctx.message.author
-        
         if user.id not in history:
-            await self.bot.say("You don't have any warning yet")
+            await self.bot.say("User does not have any warnings yet")
             return
 
         if case < 0 or case > history[user.id]['total-warns']:
@@ -474,7 +470,7 @@ class uWarn:
             e = discord.Embed(description="General user infos")
             e.set_author(name=user, icon_url=user.avatar_url)
 
-            e.add_field(name=u"\u2063", value="Total warns: {}\nSimple warns: {}\nKick warns: {}\nBan warns: {}".format(str(history[user.id]['total-warns']), str(history[user.id]['simple-warn']), str(history[user.id]['kick-warn']), str(history[user.id]['ban-warn'])))
+            e.add_field(name=u"\u2063", value="Total warns: {}".format(str(history[user.id]['total-warns'])))
 
             e.set_footer(text="Click on the reaction to see all of the cases")
             
@@ -607,7 +603,7 @@ class uWarn:
         try:
             history = dataIO.load_json('data/uwarn/history/{}.json'.format(server.id))
         except:
-            await self.erro(ctx)
+            await self.error(ctx)
             return
     
         if user.id not in history:

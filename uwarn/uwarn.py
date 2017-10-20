@@ -409,8 +409,21 @@ class uWarn:
             report.color = discord.Colour(self.settings[server.id]['colour']['warning_embed_simple'])
         except:
             pass
+        target = discord.Embed(description="You have been warned in {}!".format(str(server)))
+        target.add_field(name="Moderator", value=author.mention, inline=False)
+        target.add_field(name="Reason", value=reason, inline=False)
+        target.set_footer(text=ctx.message.timestamp.strftime("%d %b %Y %H:%M"))
+        target.set_thumbnail(url=str(warninggif))
+        try:
+            report.color = discord.Colour(self.settings[server.id]['colour']['warning_embed_simple'])
+        except:
+            pass
+
+        try:
+            await self.bot.send_message(user, embed=target)
+        except:
+            modlog.set_footer(text="I couldn't send a message to this user. He may has blocked messages from this server.")
         await self.bot.send_message(channel, embed=modlog)
-        await self.bot.send_message(user, "You have been warned in ``{}`` for ``{}`` by ``{}``. You are a very bad human!".format(str(server), reason, str(author)))
         await self.add_case(level='Normal', user=user, reason=reason, timestamp=ctx.message.timestamp.strftime("%d %b %Y %H:%M"), server=server, applied=1, ctx=ctx)
 
     @commands.group(pass_context=True)
@@ -429,7 +442,7 @@ class uWarn:
         
         server = ctx.message.server
         author = ctx.message.author
-        user = author
+        user = discord.Member
         
         if not os.path.isfile('data/uwarn/history/{}.json'.format(server.id)):
             print("Creating empty {}".format(server.id))

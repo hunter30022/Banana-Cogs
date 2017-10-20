@@ -1,0 +1,10 @@
+
+{
+    "AUTHOR" : "El Laggron, LegitBananaMan",
+    "SHORT" : "A fully fledged warn cog, with a report feature for users to report others.",
+    "DESCRIPTION" : "A fully fledged warn cog, with a report feature for users to report others.",
+    "DISABLED" : false,
+    "NAME" : "uWarn",
+    "TAGS" : ["warn", "moderation"],
+    "INSTALL_MSG" : "Thanks for insyalling uWarn! Please note most of the code belongs to El Laggron. Enjoy!"
+}

@@ -10,7 +10,6 @@ from .utils import checks
 from __main__ import settings as set_roles
 
 
-
 class uWarn:
 
 
@@ -256,6 +255,7 @@ class uWarn:
     
                 e.add_field(name="Date", value=history[user.id]['case{}'.format(str(i))]['timestamp'], inline=True)
                 e.add_field(name="Reason", value=history[user.id]['case{}'.format(str(i))]['reason'], inline=False)
+                e.add_field(name="WarnID", value=(int(i) + int(user.id)), inline=False)
                     
                 msg = await self.bot.edit_message(msg, embed=e)
                 
@@ -281,27 +281,15 @@ class uWarn:
                 e.set_author(name=user.name, icon_url=user.avatar_url)
                 
                 e.add_field(name="Level", value=history[user.id]['case{}'.format(str(i))]['level'], inline=True)
-                
-                if history[user.id]['case{}'.format(str(i))]['applied'] == 1:
-                    e.add_field(name="Applied", value="Yes", inline=True)
-                else:
-                    e.add_field(name="Applied", value="No", inline=True)
-
                 e.add_field(name="Date", value=history[user.id]['case{}'.format(str(i))]['timestamp'], inline=True)
                 e.add_field(name="Reason", value=history[user.id]['case{}'.format(str(i))]['reason'], inline=False)
+                e.add_field(name="WarnID", value=(int(i) + int(user.id)), inline=False)
 
                 msg = await self.bot.edit_message(msg, embed=e)
 
     @commands.group(pass_context=True)
     @checks.admin()
-    async def umodset(self, ctx):
-        """uWarn's settings"""
-    
-        if ctx.invoked_subcommand is None:
-            await self.bot.send_cmd_help(ctx)
-                        
-    @umodset.command(pass_context=True, no_pm=True)
-    async def channel(self, ctx, channel : discord.Channel = None):
+    async def loggingchannel(self, ctx):
         """Sets a channel as log"""
     
         if channel is None:
@@ -364,10 +352,10 @@ class uWarn:
         await self.bot.send_message(channel, embed=report)
         await self.bot.send_message(author, "Your report has been sent to the moderation team")
 
-    @commands.group(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True)
     @checks.mod()
     async def warn(self, ctx, user: discord.Member, *, reason: str):
-        """Send a warning to a user and store it"""
+        """Send a warning to a user."""
         try:
             await self.bot.delete_message(ctx.message)
         except:
@@ -376,13 +364,6 @@ class uWarn:
         server = ctx.message.server
         author = ctx.message.author
         warninggif = "https://media.giphy.com/media/GvKfRYEJTULKg/giphy.gif"
-        
-        try:
-            if server.id not in self.settings:
-                await self.init(server)
-        except:
-            await self.error(ctx)
-
         if self.settings[server.id]['mod-log'] == '0':
             await self.bot.say("The log channel is not set yet. Please use `" + ctx.prefix + "umodset channel` to set it. Aborting...")
             return
@@ -390,18 +371,45 @@ class uWarn:
             channel = self.bot.get_channel(self.settings[server.id]['mod-log'])
 
         if user == self.bot.user:
-            await self.bot.say("Why do you want to report me :C I did nothing wrong (I cannot kick or ban myself)")
+            await self.bot.say("Why tho, you can't warn me cuz i'm a savage.")
             return
 
         elif user.bot:
-            await self.bot.say("Why trying to report a bot ? I cannot send message to bots, they cannot see them. Instead, go for the manual way.")
+            await self.bot.say("Fucking moron, bots don't accept DM's from other bots")
             return
-
+        try:
+            history = dataIO.load_json('data/uwarn/history/{}.json'.format(server.id))
+        except:
+            await self.erro(ctx)
+            return
+        
+        if user.id not in history:
+            await self.bot.say("User does not have any warnings yet")
+            return
+        i = None
+        if i is not None:
+            if i > history[user.id]['total-warns'] or i<= 0:
+                i = 1
+        if i is None:
+            i = history[user.id]['total-warns']
+        else:
+            i = i - 1
+                    
+        if i <= 0:
+            i = history[user.id]['total-warns']                        
+        if history[user.id]['case{}'.format(str(i))]['deleted'] == 1:
+            i = i - 1
+        try:
+            if server.id not in self.settings:
+                await self.init(server)
+        except:
+            await self.error(ctx)
         # This is the embed sent in the moderator log channel
         modlog = discord.Embed(title="Warning", description="A user was warned")
         modlog.add_field(name="User", value=user.mention, inline=True)
         modlog.add_field(name="Moderator", value=author.mention, inline=True)
         modlog.add_field(name="Reason", value=reason, inline=False)
+        modlog.add_field(name="WarnID", value=(int(i) + int(user.id)), inline=False)
         modlog.set_author(name=user.name, icon_url=user.avatar_url)
         modlog.set_footer(text=ctx.message.timestamp.strftime("%d %b %Y %H:%M"))
         modlog.set_thumbnail(url=str(warninggif))
@@ -412,6 +420,7 @@ class uWarn:
         target = discord.Embed(description="You have been warned in {}!".format(str(server)))
         target.add_field(name="Moderator", value=author.mention, inline=False)
         target.add_field(name="Reason", value=reason, inline=False)
+        target.add_field(name="WarnID", value=(int(i) + int(user.id)), inline=False)
         target.set_footer(text=ctx.message.timestamp.strftime("%d %b %Y %H:%M"))
         target.set_thumbnail(url=str(warninggif))
         try:
@@ -420,28 +429,20 @@ class uWarn:
             pass
 
         try:
-            await self.bot.send_message(user, embed=target)
+            msg = await self.bot.send_message(user, embed=target)
         except:
             modlog.set_footer(text="I couldn't send a message to this user. He may has blocked messages from this server.")
-        await self.bot.send_message(channel, embed=modlog)
+        dmedmsg = await self.bot.send_message(channel, embed=modlog)
         await self.add_case(level='Normal', user=user, reason=reason, timestamp=ctx.message.timestamp.strftime("%d %b %Y %H:%M"), server=server, applied=1, ctx=ctx)
 
-    @commands.group(pass_context=True)
-    async def case(self, ctx):
-        """Check warnings of a user"""
-    
-        if ctx.invoked_subcommand is None:
-            await self.bot.send_cmd_help(ctx)
-
-
-    @case.command(pass_context=True)
-    async def check(self, ctx, case: int, user: discord.Member):
-        """Give the sanction and the reason of a specific case
-            
-            If 0 is given, all of the cases of the user will be given"""
+    @commands.command(pass_context=True, no_pm=True)
+    async def warnings(self, ctx, user: discord.Member, *, case: int=None):
+        """Give the reason behind a case"""
         
         server = ctx.message.server
         author = ctx.message.author
+        if not case:
+            case = 0
         
         if not os.path.isfile('data/uwarn/history/{}.json'.format(server.id)):
             print("Creating empty {}".format(server.id))
@@ -492,161 +493,6 @@ class uWarn:
         except:
             await self.error(ctx)
             return
-
-    @checks.mod_or_permissions(administrator=True)
-    @case.command(pass_context=True)
-    async def sudo(self, ctx, case: int, user: discord.Member = None):
-        """Same as check, except you can check everyone's cases"""
-
-    @case.command(pass_context=True)
-    @checks.mod_or_permissions(administrator=True)
-    async def delete(self, ctx, case: int, user: discord.Member):
-        """Delete a case"""
-
-        server = ctx.message.server
-        if not os.path.isfile('data/uwarn/history/{}.json'.format(server.id)):
-            print("Creating empty {}".format(server.id))
-            try:
-                dataIO.save_json('data/uwarn/history/{}.json'.format(server.id), data={})
-            except:
-                await self.error(ctx)
-                return
-    
-        try:
-            history = dataIO.load_json('data/uwarn/history/{}.json'.format(server.id))
-        except:
-            await self.erro(ctx)
-            return
-
-        if user.id not in history:
-            await self.bot.say("That user does not have any warning yet")
-            return
-        
-        if case < 0 or case > history[user.id]['total-warns'] or history[user.id]['case{}'.format(str(case))]['deleted'] == 1:
-            await self.bot.say("That case does not exist or is already deleted")
-            return
-        
-        e = discord.Embed(description="User case {} delete".format(str(case)))
-        e.set_author(name=user.name, icon_url=user.avatar_url)
-        
-        e.add_field(name="Reason", value=history[user.id]['case{}'.format(str(case))]['reason'], inline=False)
-        
-        if history[user.id]['case{}'.format(str(case))]['level'] == "Simple":
-            e.add_field(name="Total simple warnings", value="Before: {}\nAfter: {}".format(history[user.id]['simple-warn'], history[user.id]['simple-warn']- 1), inline=True)
-        
-        elif history[user.id]['case{}'.format(str(case))]['level'] == "Kick":
-            e.add_field(name="Total kick warnings", value="Before: {}\nAfter: {}".format(history[user.id]['kick-warn'], history[user.id]['kick-warn'] - 1), inline=True)
-        
-        elif history[user.id]['case{}'.format(str(case))]['level'] == "Ban":
-            e.add_field(name="Total ban warnings", value="Before: {}\nAfter: {}".format(history[user.id]['ban-warn'], history[user.id]['ban-warn'] - 1), inline=True)
-
-        e.add_field(name="Total warnings", value="Before: {}\nAfter: {}".format(history[user.id]['total-warns'], history[user.id]['total-warns'] - 1), inline=True)
-
-        e.set_footer(text="Click on the reaction to confirm changes")
-
-
-        try:
-            msg = await self.bot.say(embed=e)
-            await self.bot.add_reaction(msg, "✅")
-        except:
-            await self.error(ctx)
-            return
-
-        response = await self.bot.wait_for_reaction(emoji="✅", user=ctx.message.author, message=msg, timeout=30)
-        
-        if response is None:
-            await self.bot.clear_reactions(msg)
-            return
-
-        if response.reaction.emoji == '✅':
-            
-            if history[user.id]['case{}'.format(str(case))]['level'] == "Simple":
-                history[user.id]['simple-warn'] = history[user.id]['simple-warn'] - 1
-
-            elif history[user.id]['case{}'.format(str(case))]['level'] == "Kick":
-                history[user.id]['kick-warn'] = history[user.id]['kick-warn'] - 1
-        
-            elif history[user.id]['case{}'.format(str(case))]['level'] == "Ban":
-                history[user.id]['ban-warn'] = history[user.id]['ban-warn'] - 1
-
-            history[user.id]['total-warns'] = history[user.id]['total-warns'] - 1
-            history[user.id]['case{}'.format(str(case))]['deleted'] = 1
-            try:
-                await self.bot.delete_message(msg)
-            except:
-                await self.error(ctx)
-                return
-            await self.bot.say("The case {} of {} has been deleted".format(str(case), user.name))
-
-        try:
-            dataIO.save_json('data/uwarn/settings.json', self.settings)
-        except:
-            await self.error(ctx)
-            return
-        
-
-
-    @checks.mod_or_permissions(administrator=True)
-    @case.command(pass_context=True)
-    async def edit(self, ctx, case: int, user: discord.Member, *, reason):
-        """Edit the reason of the specified case"""
-
-        server = ctx.message.server
-        if not os.path.isfile('data/uwarn/history/{}.json'.format(server.id)):
-            print("Creating empty {}".format(server.id))
-            try:
-                dataIO.save_json('data/uwarn/history/{}.json'.format(server.id), data={})
-            except:
-                await self.error(ctx)
-                return
-    
-        try:
-            history = dataIO.load_json('data/uwarn/history/{}.json'.format(server.id))
-        except:
-            await self.error(ctx)
-            return
-    
-        if user.id not in history:
-            await self.bot.say("That user does not have any warning yet")
-            return
-        
-        if case < 0 or case > history[user.id]['total-warns']:
-            await self.bot.say("That case does not exist")
-            return
-
-        old_reason = history[user.id]['case{}'.format(str(case))]['reason']
-
-        e = discord.Embed(description="User case {} reason change".format(str(case)))
-        e.set_author(name=user.name, icon_url=user.avatar_url)
-
-        e.add_field(name="Old reason", value=old_reason, inline=True)
-        e.add_field(name="New reason", value=reason, inline=True)
-        e.set_footer(text="Click on the reaction to confirm changes")
-        
-        try:
-            msg = await self.bot.say(embed=e)
-            await self.bot.add_reaction(msg, "✅")
-        except:
-            await self.error(ctx)
-            return
-
-        response = await self.bot.wait_for_reaction(emoji="✅", user=ctx.message.author, message=msg, timeout=30)
-
-        if response is None:
-            await self.bot.clear_reactions(msg)
-            return
-
-        if response.reaction.emoji == '✅':
-            history[user.id]['case{}'.format(str(case))]['reason'] = reason
-
-        dataIO.save_json('data/uwarn/history/{}.json'.format(server.id), history)
-        try:
-            await self.bot.delete_message(msg)
-        except:
-            await self.error(ctx)
-            return
-        
-        await self.bot.say("The new reason has been saved")
 
 def check_folders():
     folders = ('data', 'data/uwarn/', 'data/uwarn/history/')

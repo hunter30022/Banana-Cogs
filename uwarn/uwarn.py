@@ -289,10 +289,10 @@ class uWarn:
 
     @commands.group(pass_context=True)
     @checks.admin()
-    async def loggingchannel(self, ctx):
+    async def loggingchannel(self, ctx, *, channel: discord.Channel=None):
         """Sets a channel as log"""
     
-        if channel is None:
+        if not channel:
             channel = ctx.message.channel
         else:
             pass
@@ -380,12 +380,18 @@ class uWarn:
         try:
             history = dataIO.load_json('data/uwarn/history/{}.json'.format(server.id))
         except:
-            await self.erro(ctx)
+            await self.error(ctx)
             return
         
         if user.id not in history:
-            await self.bot.say("User does not have any warnings yet")
-            return
+            history[user.id] = {
+                'simple-warn': 0,
+                'kick-warn': 0,
+                'ban-warn': 0,
+                'total-warns': 0
+            }
+        
+        total = history[user.id]['total-warns'] + 1
         i = None
         if i is not None:
             if i > history[user.id]['total-warns'] or i<= 0:
@@ -397,8 +403,6 @@ class uWarn:
                     
         if i <= 0:
             i = history[user.id]['total-warns']                        
-        if history[user.id]['case{}'.format(str(i))]['deleted'] == 1:
-            i = i - 1
         try:
             if server.id not in self.settings:
                 await self.init(server)

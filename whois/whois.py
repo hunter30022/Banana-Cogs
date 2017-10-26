@@ -4,20 +4,17 @@ from cogs.utils.dataIO import dataIO
 from collections import namedtuple, defaultdict, deque
 from datetime import datetime
 from copy import deepcopy
-from .utils import checks
+from cogs.utils import checks
 from cogs.utils.chat_formatting import pagify, box
 from enum import Enum
 from __main__ import send_cmd_help
 import os
-import datetime
 import time
 import logging
-import random
-from random import choice, randint
+from random import choice
 
 
 class Economy:
-
         """Created so I could call the economy API"""
 
 

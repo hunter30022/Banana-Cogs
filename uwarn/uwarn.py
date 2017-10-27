@@ -10,6 +10,14 @@ from .utils import checks
 from __main__ import settings as set_roles
 
 
+numbs = {
+    "ban": "☢",
+    "kick": "📛",
+    "warn": "⚠",
+    "clear": "✅"
+}
+
+
 class uWarn:
 
 
@@ -332,7 +340,7 @@ class uWarn:
             await self.error(ctx)
         
         if self.settings[server.id]['mod-log'] == '0':
-            await self.bot.say("The log channel is not set yet. Please use `" + ctx.prefix + "umodset channel` to set it. Aborting...")
+            await self.bot.say("The log channel is not set yet. Please use `" + ctx.prefix + "loggingchannel` to set it. Aborting...")
             return
         else:
             channel = self.bot.get_channel(self.settings[server.id]['mod-log'])
@@ -348,9 +356,162 @@ class uWarn:
             report.color = discord.Colour(self.settings[server.id]['colour']['report_embed'])
         except:
             pass
-
-        await self.bot.send_message(channel, embed=report)
+        timeout = 120
+        datmsgtho = await self.bot.send_message(channel, embed=report)
+        await self.bot.add_reaction(datmsgtho, "📛")
+        await self.bot.add_reaction(datmsgtho, "☢")
+        await self.bot.add_reaction(datmsgtho, "⚠")
+        await self.bot.add_reaction(datmsgtho, "✅")
+        await self.bot.send_message(channel, "A user has been reported! You have two minutes to take action via these reactions. If you choose to ignore this message, the reactions will be removed and the message will stay.\n •⚠ - warns the user for whatever reason you specify.\n•📛 - Kicks the user who was reported. •☢ - Bans the user who was reported. •✅ - Manually clears the reactions of the report embed")
         await self.bot.send_message(author, "Your report has been sent to the moderation team")
+        react = await self.bot.wait_for_reaction(
+            message=datmsgtho, user=ctx.message.author, timeout=timeout,
+            emoji=["📛", "⚠", "✅", "☢"]
+        )
+        if react is None:
+            try:
+                try:
+                    await self.bot.clear_reactions(datmsgtho)
+                except:
+                    await self.bot.remove_reaction(datmsgtho, "📛", self.bot.user)
+                    await self.bot.remove_reaction(datmsgtho, "⚠", self.bot.user)
+                    await self.bot.remove_reaction(datmsgtho, "✅", self.bot.user)
+                    await self.bot.remove_reaction(datmsgtho, "☢", self.bot.user)
+            except:
+                pass
+            return None
+        reacts = {v: k for k, v in numbs.items()}
+        react = reacts[react.reaction.emoji]
+        if react == "warn":
+            await self.bot.say("Please say the warn reason in chat.")
+            answer = await self.bot.wait_for_message(timeout=120,
+                                                     author=ctx.message.author)
+            if answer is None:
+                await self.bot.say('Warn has been cancelled.')
+                return
+            else:
+                warnmsg = answer.content
+            server = ctx.message.server
+            author = ctx.message.author
+            warninggif = "https://media.giphy.com/media/GvKfRYEJTULKg/giphy.gif"
+            if self.settings[server.id]['mod-log'] == '0':
+                await self.bot.say("The log channel is not set yet. Please use `" + ctx.prefix + "loggingchannel` to set it. Aborting...")
+                return
+            else:
+                channel = self.bot.get_channel(self.settings[server.id]['mod-log'])
+
+            if user == self.bot.user:
+                await self.bot.say("Why tho, you can't warn me cuz i'm a savage.")
+                return
+
+            elif user.bot:
+                await self.bot.say("Fucking moron, bots don't accept DM's from other bots")
+                return
+            try:
+                history = dataIO.load_json('data/uwarn/history/{}.json'.format(server.id))
+            except:
+                await self.error(ctx)
+                return
+        
+            if user.id not in history:
+                history[user.id] = {
+                    'simple-warn': 0,
+                    'kick-warn': 0,
+                    'ban-warn': 0,
+                    'total-warns': 0
+                }
+        
+            total = history[user.id]['total-warns'] + 1
+            i = None
+            if i is not None:
+                if i > history[user.id]['total-warns'] or i<= 0:
+                    i = 1
+            if i is None:
+                i = history[user.id]['total-warns']
+            else:
+                i = i - 1
+                    
+            if i <= 0:
+                i = history[user.id]['total-warns']                        
+            try:
+                if server.id not in self.settings:
+                    await self.init(server)
+            except:
+                await self.error(ctx)
+            # This is the embed sent in the moderator log channel
+            modlog = discord.Embed(title="Warning", description="A user was warned")
+            modlog.add_field(name="User", value=user.mention, inline=True)
+            modlog.add_field(name="Moderator", value=author.mention, inline=True)
+            modlog.add_field(name="Reason", value=warnmsg, inline=False)
+            modlog.add_field(name="WarnID", value=(int(i) + int(user.id)), inline=False)
+            modlog.set_author(name=user.name, icon_url=user.avatar_url)
+            modlog.set_footer(text=ctx.message.timestamp.strftime("%d %b %Y %H:%M"))
+            modlog.set_thumbnail(url=str(warninggif))
+            try:
+                report.color = discord.Colour(self.settings[server.id]['colour']['warning_embed_simple'])
+            except:
+                pass
+            target = discord.Embed(description="You have been warned in {}!".format(str(server)))
+            target.add_field(name="Moderator", value=author.mention, inline=False)
+            target.add_field(name="Reason", value=warnmsg, inline=False)
+            target.add_field(name="WarnID", value=(int(i) + int(user.id)), inline=False)
+            target.set_footer(text=ctx.message.timestamp.strftime("%d %b %Y %H:%M"))
+            target.set_thumbnail(url=str(warninggif))
+            try:
+                report.color = discord.Colour(self.settings[server.id]['colour']['warning_embed_simple'])
+            except:
+                pass
+
+            try:
+                msg = await self.bot.send_message(user, embed=target)
+            except:
+                modlog.set_footer(text="I couldn't send a message to this user. He may has blocked messages from this server.")
+            dmedmsg = await self.bot.send_message(channel, embed=modlog)
+            await self.add_case(level='Normal', user=user, reason=reason, timestamp=ctx.message.timestamp.strftime("%d %b %Y %H:%M"), server=server, applied=1, ctx=ctx)
+            await self.bot.clear_reactions(datmsgtho)
+            return
+        elif react == "ban":
+            await self.bot.say("Are you absolutley sure you want to ban {}? yes or no ***MUST BE yes OR no***".format(user.name))
+            answer = await self.bot.wait_for_message(timeout=30,
+                                                     author=ctx.message.author)
+            if answer is None:
+                await self.bot.say('Times up! User will *not* be banned.')
+                return
+            elif "yes" not in answer.content.lower():
+                await self.bot.say('User will not be banned.')
+                return
+            else:
+                try:
+                    await self.bot.send_message(user, "You have been banned from {}! I hope this teaches you a lesson.".format(ctx.message.server.name))
+                    await self.bot.ban(user, 2)
+                    await self.bot.say("Banned user and deleted 2 days worth of messages from them. This was permanent!")
+                    await self.bot.clear_reactions(datmsgtho)
+                except discord.HTTPException:
+                    await self.bot.say("I need the ban permission.. Aborting!")
+                    await self.bot.clear_reactions(datmsgtho)
+        elif react == "kick":
+            await self.bot.say("Are you sure you want to kick {}? yes or no ***MUST BE yes OR no***".format(user.name))
+            answer = await self.bot.wait_for_message(timeout=30,
+                                                     author=ctx.message.author)
+            if answer is None:
+                await self.bot.say('Times up! User will *not* be kicked.')
+                return
+            elif "yes" not in answer.content.lower():
+                await self.bot.say('User will not be kicked.')
+                return
+            else:
+                try:
+                    await self.bot.send_message(user, "You have been kicked from {}! I hope you come back with a better attitude.".format(ctx.message.server.name))
+                    await self.bot.kick(user)
+                    await self.bot.say("The user has been kicked. They can rejoin with an invite link,")
+                    await self.bot.clear_reactions(datmsgtho)
+                except discord.HTTPException:
+                    await self.bot.say("I need the kick permission.. Aborting!")
+                    await self.bot.clear_reactions(datmsgtho)
+                    return
+        elif react == "clear":
+            await self.bot.clear_reactions(datmsgtho)
+            await self.bot.say("Reactions have been cleared.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod()
@@ -365,7 +526,7 @@ class uWarn:
         author = ctx.message.author
         warninggif = "https://media.giphy.com/media/GvKfRYEJTULKg/giphy.gif"
         if self.settings[server.id]['mod-log'] == '0':
-            await self.bot.say("The log channel is not set yet. Please use `" + ctx.prefix + "umodset channel` to set it. Aborting...")
+            await self.bot.say("The log channel is not set yet. Please use `" + ctx.prefix + "loggingchannel` to set it. Aborting...")
             return
         else:
             channel = self.bot.get_channel(self.settings[server.id]['mod-log'])

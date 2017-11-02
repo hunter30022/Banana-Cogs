@@ -4,7 +4,7 @@
     "SHORT" : "Totally accurate penis size calculator",
     "DESCRIPTION" : "Tells you a user's penis size",
     "DISABLED" : false,
-    "NAME" : "penis",
+    "NAME" : "PenisRem",
     "TAGS" : ["user", "random"],
     "INSTALL_MSG" : "Usage: `[p]penis <user>` \n If you are the bot's owner, your penis is huge!"
 }

@@ -698,7 +698,14 @@ class uWarn:
         servers = len(self.bot.servers)
         myvariable = "{} servers | {} users".format(servers, users)
         await self.bot.change_presence(game=discord.Game(type=1, url="https://www.twitch.tv/pleasejustignorethis", name=("{} servers | {} users".format(servers, users))))
-
+        await self.bot.say("Done.")
+        
+        
+    @checks.admin()
+    @commands.comman(pass_context=True, no_pm=True)
+    async def csay(self, ctx, channel: discord.Channel, *, text):
+        await self.bot.send_message(channel, text)
+        
 
 def check_folders():
     folders = ('data', 'data/uwarn/', 'data/uwarn/history/')

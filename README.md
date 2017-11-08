@@ -1,12 +1,1 @@
-# Banana-Cogs
-All of my weird and random cogs
-
-Feel free to submit a PR! I love feedback, and I would especially appreciate help.
-
-> # Credits
-> **Thot:** I got the code from insult
-> **Penis Remastered:** Base code is obviously penis :P
-> **WhoIs:** Aikaterna's autoeconomy cog was the only reason i could add the economy status. For that, i thank her. Find her repo here 
--> https://github.com/aikaterna/aikaterna-cogs
-> WhoIs: I also used some of the code from userinfo located in red's stock files. Thanks to Jenn for that code.
-> **uWarn** Pretty much all of this code belongs to El Laggron's BetterMod. Feel free to stop by his repo!
+Hi! Glad you stopped by. My name is Hunter Kendall and I develop cogs for Red-Bot. There use to be quite a few of them here. Some people didn't appreciate the stuff on my repo, but I understand it. I had some questionable cog. Either way, all you see here is thot and whois. These are mine in their entirety, so I'm ok with them on my repo. Whois is my side project, and is NOWHERE near complete. Obviously thot is a super simple cog, this is because it was my first one! Make sure to love it and cherish it. Thot _is_  my baby after all ;) anyways, i have been Banana, peace out!

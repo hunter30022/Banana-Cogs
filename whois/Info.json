@@ -4,7 +4,7 @@
     "SHORT" : "Calls information on a user",
     "DESCRIPTION" : "Call a user's information",
     "DISABLED" : false,
-    "NAME" : "whois",
+    "NAME" : "Whois",
     "TAGS" : ["user", "random"],
     "INSTALL_MSG" : "Usage: `[p]whois <user>` ABSOLUTLEY WILL NOT WORK if you don't have economy loaded"
 }

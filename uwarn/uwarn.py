@@ -702,7 +702,7 @@ class uWarn:
         
         
     @checks.admin()
-    @commands.comman(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True)
     async def csay(self, ctx, channel: discord.Channel, *, text):
         await self.bot.send_message(channel, text)
         

@@ -11,7 +11,7 @@ class Thot:
         self.thotchoices = fileIO("data/thot/thotchoices.json","load")
 
     @commands.command(pass_context=True, no_pm=True)
-    async def thot(self, ctx, user : discord.Member=None):
+    async def thot(self, ctx, user: discord.Member=None):
         """Determines if a user is a thot or not"""
         If not user:
             user = ctx.message.author

@@ -1,0 +1,1 @@
+Oh, why hello there! You are probably here to report a bug with the setup command. That's perfect! Its quite easy by the way. Just click that issues button, and create. Make the short description the bug's name, attach screenshots in the text area, and then report it! Thank you for reporting the bug. Cheers!
